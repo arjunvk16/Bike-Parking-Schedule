@@ -9,59 +9,234 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* bg-gray-900 */
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
+        /* Dark mode */
+        body.dark {
+            background-color: #111827;
+            color: #e5e7eb;
+        }
+        /* Light mode */
+        body.light {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .light .bg-gray-800 {
+            background-color: #ffffff;
+            border-color: #e5e7eb;
+        }
+        .light .bg-gray-900 {
+            background-color: #f9fafb;
+        }
+        .light .text-gray-400 {
+            color: #4b5563;
+        }
+        .light .text-gray-500 {
+            color: #6b7280;
+        }
+        .light .text-white {
+            color: #1f2937;
+        }
+        .light .bg-gray-700 {
+            background-color: #e5e7eb;
+        }
+        .light .border-gray-700 {
+            border-color: #d1d5db;
+        }
+        .light .text-cyan-400 {
+            color: #0e7490;
+        }
+        .light .text-purple-400 {
+            color: #6b46c1;
+        }
+        .light .text-cyan-300 {
+            color: #22d3ee;
+        }
+        .light .text-purple-300 {
+            color: #a78bfa;
+        }
+
+        /* Card animations */
+        .card {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Hover zoom effect */
+        .card, .button {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover, .button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Spinning loader */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #06b6d4;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Pulsing weather icons */
+        .weather-icon {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        /* Smooth color transitions */
+        .button, .accordion-button {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Accordion cubic-bezier transition */
         .accordion-content {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
+            transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .accordion-button svg {
             transition: transform 0.3s ease-in-out;
         }
+
+        /* Modal fade and scale */
         .modal {
-            transition: opacity 0.3s ease-in-out;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal-box {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
 
-        /* --- Weather Animations --- */
-        @keyframes lightning-blink {
-          0%, 95%, 100% { border-color: #374151; box-shadow: none; }
-          96% { border-color: #a5f3fc; box-shadow: 0 0 25px #22d3ee, inset 0 0 15px #67e8f9; }
-          98% { border-color: #374151; box-shadow: none; }
+        /* Tooltip styles */
+        .tooltip {
+            position: relative;
         }
-        .weather-thunderstorm { animation: lightning-blink 4s infinite; }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 160px;
+            background-color: #1f2937;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 10;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .light .tooltip .tooltip-text {
+            background-color: #4b5563;
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            background-color: #374151;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 8px;
+        }
+        .light .progress-bar {
+            background-color: #d1d5db;
+        }
+        .progress-bar-fill {
+            background-color: #06b6d4;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Weather Animations */
+        @keyframes lightning-blink {
+            0%, 95%, 100% { border-color: #374151; box-shadow: none; }
+            96% { border-color: #a5f3fc; box-shadow: 0 0 25px #22d3ee, inset 0 0 15px #67e8f9; }
+            98% { border-color: #374151; box-shadow: none; }
+        }
+        .light .weather-thunderstorm {
+            animation: lightning-blink 4s infinite;
+            border-color: #d1d5db;
+        }
+        .weather-thunderstorm {
+            animation: lightning-blink 4s infinite;
+        }
 
         @keyframes rain-fall {
             0% { background-position: 0px 0px; }
             100% { background-position: 60px 1000px; }
         }
-        .weather-showers { position: relative; overflow: hidden; }
+        .weather-showers {
+            position: relative;
+            overflow: hidden;
+        }
         .weather-showers::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: linear-gradient(165deg, transparent 49.5%, rgba(147, 197, 253, 0.6) 50%, transparent 50.5%);
-            background-size: 35px 35px; animation: rain-fall 1.2s linear infinite; opacity: 0.3; pointer-events: none; z-index: 1;
+            background-size: 35px 35px;
+            animation: rain-fall 1.2s linear infinite;
+            opacity: 0.3;
+            pointer-events: none;
+            z-index: 1;
         }
 
         @keyframes sunny-glow {
             0%, 100% { border-color: #374151; box-shadow: none; }
             50% { border-color: #fcd34d; box-shadow: 0 0 20px #fca5a5, inset 0 0 10px #fde68a; }
         }
-        .weather-clear { animation: sunny-glow 5s infinite ease-in-out; }
+        .light .weather-clear {
+            animation: sunny-glow 5s infinite ease-in-out;
+            border-color: #d1d5db;
+        }
+        .weather-clear {
+            animation: sunny-glow 5s infinite ease-in-out;
+        }
 
         @keyframes move-clouds {
             0% { background-position: 0 0; }
             100% { background-position: 560px 0; }
         }
-        .weather-cloudy { position: relative; overflow: hidden; }
+        .weather-cloudy {
+            position: relative;
+            overflow: hidden;
+        }
         .weather-cloudy::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180" fill="rgba(255,255,255,0.1)"><path d="M140 120 A60 60 0 1 1 140 0 A40 40 0 1 1 220 40 L220 120 Z M350 150 A70 70 0 1 1 350 10 A50 50 0 1 1 450 60 L450 150 Z M50 180 A50 50 0 1 1 50 80 A30 30 0 1 1 110 110 L110 180 Z"></path></svg>');
             animation: move-clouds 15s linear infinite;
             opacity: 0.2;
             z-index: 1;
         }
 
-        /* --- Bike Animation --- */
+        /* Bike Animation */
         @keyframes move-bike {
             from { transform: translateX(-150%); opacity: 0; }
             25% { transform: translateX(0); opacity: 1; }
@@ -72,11 +247,9 @@
             animation: move-bike 3.5s ease-in-out infinite;
             animation-delay: 0.5s;
         }
-
     </style>
 </head>
-<body class="text-gray-200 antialiased">
-
+<body class="dark text-gray-200 antialiased">
     <div class="container mx-auto px-4 py-8 md:py-12">
         <header class="text-center mb-10">
             <div class="flex flex-col md:flex-row justify-center items-center gap-4">
@@ -86,25 +259,36 @@
                 </div>
             </div>
             <p class="text-lg text-gray-400 mt-2">A fair rotation for all team members throughout the year.</p>
+            <div class="mt-4 flex justify-center gap-4">
+                <div class="relative">
+                    <input id="search-bar" type="text" placeholder="e.g., Dayanitta or 15" class="bg-gray-700 text-white rounded-lg py-2 px-4 w-64 focus:outline-none focus:ring-2 focus:ring-cyan-400" aria-label="Search schedule by name or date">
+                </div>
+                <select id="month-dropdown" class="bg-gray-700 text-white rounded-lg py-2 px-4 focus:outline-none focus:ring-2 focus:ring-cyan-400" aria-label="Jump to month">
+                    <option value="">Select Month</option>
+                </select>
+                <button id="theme-toggle" class="button bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-lg transition-colors duration-200" aria-label="Toggle dark/light mode">
+                    <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                </button>
+            </div>
         </header>
 
         <main>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col">
+                <div class="card bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col" style="animation-delay: 0.1s;">
                     <h2 class="text-xl font-semibold text-cyan-400 mb-4">Today's Parking</h2>
                     <div id="today-details" class="space-y-3 flex-grow">
-                        <p class="text-gray-500">Loading...</p>
+                        <div class="loader"></div>
                     </div>
                 </div>
-                <div id="tomorrow-card" class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col">
+                <div id="tomorrow-card" class="card bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col" style="animation-delay: 0.2s;">
                     <h2 id="next-day-title" class="text-xl font-semibold text-purple-400 mb-4">Next Day's Parking</h2>
                     <div id="tomorrow-details" class="space-y-3 flex-grow">
-                         <p class="text-gray-500">Loading...</p>
+                        <div class="loader"></div>
                     </div>
                 </div>
             </div>
-            <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
-                 <h2 class="text-xl font-semibold text-white p-6 border-b border-gray-700">Yearly Schedule</h2>
+            <div class="card bg-gray-800 rounded-xl shadow-lg border border-gray-700" style="animation-delay: 0.3s;">
+                <h2 class="text-xl font-semibold text-white p-6 border-b border-gray-700">Yearly Schedule</h2>
                 <div id="schedule-accordion" class="divide-y divide-gray-700"></div>
             </div>
         </main>
@@ -113,12 +297,12 @@
             <p>Designed for efficient parking management.</p>
         </footer>
     </div>
-    
+
     <div id="reassign-modal" class="modal fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 opacity-0 pointer-events-none z-50">
-        <div class="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-gray-700 transform scale-95 transition-transform duration-300">
+        <div class="modal-box bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-gray-700 transform scale-95">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-2xl font-bold text-white">Parking Replacements</h3>
-                <button id="close-modal-button" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+                <button id="close-modal-button" class="button text-gray-400 hover:text-white text-3xl leading-none" aria-label="Close modal">×</button>
             </div>
             <div id="modal-content" class="text-center"></div>
         </div>
@@ -129,37 +313,51 @@
             // --- CONFIGURATION ---
             const members = ['Akhil', 'Arjun Reeja', 'Arjun V K', 'Chanthuraj', 'Dayanitta', 'Eby', 'Rishil', 'Shehmil', 'Sumesh'];
             const year = new Date().getFullYear();
-            
-            // --- REAL-TIME WEATHER LOGIC ---
-            const fetchWeatherData = async () => {
-                const lat = 9.93; // Kochi Latitude
-                const lon = 76.27; // Kochi Longitude
-                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia/Kolkata`;
+            const totalSlotsPerYear = 12 * 22 * 2; // Approx 22 working days/month * 2 slots
 
+            // --- THEME TOGGLE ---
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            const setTheme = (theme) => {
+                document.body.classList.remove('dark', 'light');
+                document.body.classList.add(theme);
+                localStorage.setItem('theme', theme);
+                themeIcon.innerHTML = theme === 'dark' ?
+                    `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>` :
+                    `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>`;
+            };
+            themeToggle.addEventListener('click', () => {
+                const currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+                setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+            });
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+
+            // --- WEATHER LOGIC ---
+            const fetchWeatherData = async () => {
+                const lat = 9.93;
+                const lon = 76.27;
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia/Kolkata`;
                 try {
                     const response = await fetch(apiUrl);
                     if (!response.ok) throw new Error('Weather data not available.');
                     const data = await response.json();
-                    
                     const today = new Date();
                     const todayStr = `${today.toISOString().split('T')[0]}T18:00`;
                     const todayIndex = data.hourly.time.findIndex(t => t === todayStr);
-
                     const tomorrow = new Date();
                     tomorrow.setDate(tomorrow.getDate() + 1);
                     const tomorrowStr = `${tomorrow.toISOString().split('T')[0]}T09:00`;
                     const tomorrowIndex = data.hourly.time.findIndex(t => t === tomorrowStr);
-                    
                     const todayWeather = (todayIndex !== -1) ? parseWeatherData(data, todayIndex, "Evening Forecast") : null;
                     const tomorrowWeather = (tomorrowIndex !== -1) ? parseWeatherData(data, tomorrowIndex, "Morning Forecast") : null;
-                    
                     return { todayWeather, tomorrowWeather };
                 } catch (error) {
                     console.error("Failed to fetch weather:", error);
                     return { todayWeather: null, tomorrowWeather: null };
                 }
             };
-            
+
             const parseWeatherData = (data, index, forecastType) => {
                 const weatherCode = data.hourly.weather_code[index];
                 const { condition, icon } = getWeatherCondition(weatherCode);
@@ -173,27 +371,26 @@
                     wind: Math.round(data.hourly.wind_speed_10m[index]),
                 };
             };
-            
+
             const getWeatherCondition = (code) => {
                 if (code === 0) return { condition: 'Clear', icon: getWeatherIcon('Clear') };
                 if ([1, 2, 3].includes(code)) return { condition: 'Cloudy', icon: getWeatherIcon('Cloudy') };
                 if ([45, 48].includes(code)) return { condition: 'Fog', icon: getWeatherIcon('Fog') };
                 if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { condition: 'Showers', icon: getWeatherIcon('Showers') };
                 if ([95, 96, 99].includes(code)) return { condition: 'Thunderstorm', icon: getWeatherIcon('Thunderstorm') };
-                return { condition: 'Cloudy', icon: getWeatherIcon('Cloudy') }; // Default
+                return { condition: 'Cloudy', icon: getWeatherIcon('Cloudy') };
             };
 
             const getWeatherIcon = (condition) => {
-                 const icons = {
-                    'Thunderstorm': `<svg class="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM19.5 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM12 2.5a4.5 4.5 0 00-4.5 4.5v.5a5 5 0 00-.25 9.975h13.5A5 5 0 0017 7.5v-.5A4.5 4.5 0 0012 2.5zM12 13.5l-2.5 4.5h5L12 13.5z"></path></svg>`,
-                    'Showers': `<svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.25-9.975A4.5 4.5 0 0012 2.5a4.5 4.5 0 00-4.5 4.5v.5A4.5 4.5 0 003 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 19v1m4-1v1m4-1v1"></path></svg>`,
-                    'Clear': `<svg class="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`,
-                    'Cloudy': `<svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.25-9.975A4.5 4.5 0 0012 2.5C9.24 2.5 7 4.74 7 7.5v.5A4.5 4.5 0 003 15z"></path></svg>`,
-                    'Fog': `<svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 12h16.5M3.75 6.75h16.5M3.75 17.25h16.5" /></svg>`
-                 };
-                 return icons[condition] || icons['Cloudy'];
+                const icons = {
+                    'Thunderstorm': `<svg class="w-10 h-10 text-yellow-400 weather-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM19.5 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM12 2.5a4.5 4.5 0 00-4.5 4.5v.5a5 5 0 00-.25 9.975h13.5A5 5 0 0017 7.5v-.5A4.5 4.5 0 0012 2.5zM12 13.5l-2.5 4.5h5L12 13.5z"></path></svg>`,
+                    'Showers': `<svg class="w-10 h-10 text-blue-400 weather-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.25-9.975A4.5 4.5 0 0012 2.5a4.5 4.5 0 00-4.5 4.5v.5A4.5 4.5 0 003 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 19v1m4-1v1m4-1v1"></path></svg>`,
+                    'Clear': `<svg class="w-10 h-10 text-yellow-400 weather-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`,
+                    'Cloudy': `<svg class="w-10 h-10 text-gray-400 weather-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.25-9.975A4.5 4.5 0 0012 2.5C9.24 2.5 7 4.74 7 7.5v.5A4.5 4.5 0 003 15z"></path></svg>`,
+                    'Fog': `<svg class="w-10 h-10 text-gray-500 weather-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 12h16.5M3.75 6.75h16.5M3.75 17.25h16.5" /></svg>`
+                };
+                return icons[condition] || icons['Cloudy'];
             };
-
 
             // --- DATA GENERATION ---
             const generateYearlySchedule = () => {
@@ -212,7 +409,7 @@
                     const date = new Date(year, month, 1);
                     while (date.getMonth() === month) {
                         const dayOfWeek = date.getDay();
-                        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
+                        if (dayOfWeek >= 1 && dayOfWeek <= 5) {
                             workingDays.push(new Date(date));
                         }
                         date.setDate(date.getDate() + 1);
@@ -240,7 +437,7 @@
                     clockElement.textContent = now.toLocaleTimeString('en-IN', options);
                 }
             };
-            
+
             const calculateRemainingSlots = (schedule, startDate) => {
                 const remaining = {};
                 members.forEach(m => remaining[m] = 0);
@@ -260,19 +457,19 @@
                 if (!monthData) return null;
                 return monthData.find(d => new Date(d.date).toDateString() === dateToFind.toDateString());
             };
-            
+
             const findNextWorkingDayData = (currentDate) => {
-                 let nextDay = new Date(currentDate);
-                 for(let i=0; i<7; i++){
+                let nextDay = new Date(currentDate);
+                for (let i = 0; i < 7; i++) {
                     nextDay.setDate(nextDay.getDate() + 1);
-                    if(nextDay.getDay() >= 1 && nextDay.getDay() <= 5){
+                    if (nextDay.getDay() >= 1 && nextDay.getDay() <= 5) {
                         const dayData = findDayData(nextDay);
-                        if(dayData) return dayData;
+                        if (dayData) return dayData;
                     }
-                 }
-                 return null;
+                }
+                return null;
             };
-            
+
             // --- UI RENDERING ---
             const createDetailLine = (label, value, valueColorClass, isTomorrowCard = false) => {
                 let specialAnimation = '';
@@ -293,8 +490,7 @@
             const populateInfoCard = (elementId, dayData, colors, defaultText, weatherData, remainingSlots) => {
                 const container = document.getElementById(elementId);
                 const cardElement = container.parentElement;
-
-                cardElement.className = 'bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col'; // Reset classes
+                cardElement.className = 'card bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col';
                 const contentElements = [container, cardElement.querySelector('h2')];
                 contentElements.forEach(el => el && Object.assign(el.style, { position: '', zIndex: '' }));
 
@@ -312,7 +508,7 @@
                 }
 
                 const weatherHtml = weatherData ? `
-                    <div class="mt-4 pt-4 border-t border-gray-700/50">
+                    <div class="mt-4 pt-4 border-t border-gray-700/50 tooltip">
                         <div class="flex items-start gap-4">
                             <div>${weatherData.icon}</div>
                             <div class="flex-1">
@@ -324,72 +520,87 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="tooltip-text">Weather: ${weatherData.condition}<br>Temp: ${weatherData.high}°C<br>Feels like: ${weatherData.feelsLike}°C<br>Wind: ${weatherData.wind} km/h</div>
                     </div>` : '<div class="mt-4 pt-4 border-t border-gray-700/50 text-center text-gray-500">Weather data unavailable.</div>';
 
                 let parkingLeftHtml = '';
                 if (remainingSlots) {
+                    const slot1Progress = ((remainingSlots[dayData.slot1] || 0) + 1) / totalSlotsPerYear * 100;
+                    const slot2Progress = ((remainingSlots[dayData.slot2] || 0) + 1) / totalSlotsPerYear * 100;
                     parkingLeftHtml = `
-                        <div class="mt-3 pt-3 border-t border-gray-700/50 text-xs text-gray-400 space-y-1">
+                        <div class="mt-3 pt-3 border-t border-gray-700/50 text-xs text-gray-400 space-y-2">
                             <p><span class="font-semibold text-gray-200">${dayData.slot1}</span> has <span class="text-purple-300 font-bold">${(remainingSlots[dayData.slot1] || 0) + 1}</span> slots left.</p>
+                            <div class="progress-bar"><div class="progress-bar-fill" style="width: ${slot1Progress}%"></div></div>
                             <p><span class="font-semibold text-gray-200">${dayData.slot2}</span> has <span class="text-purple-300 font-bold">${(remainingSlots[dayData.slot2] || 0) + 1}</span> slots left.</p>
+                            <div class="progress-bar"><div class="progress-bar-fill" style="width: ${slot2Progress}%"></div></div>
                         </div>`;
                 }
-                
+
                 const reassignButtonHtml = (elementId === 'today-details') ? `
                     <div class="mt-auto pt-4">
                         <p class="text-xs text-gray-500 text-center mb-2">If members are unavailable:</p>
-                        <button id="reassign-button" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                        <button id="reassign-button" class="button w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2" aria-label="Find replacements">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
                             Find Replacements
                         </button>
                     </div>` : '';
-                
-                const isTomorrow = elementId === 'tomorrow-details';
+
                 container.innerHTML = `
                     <div class="flex-grow">
                         <p class="text-sm text-gray-500 mb-2">${dayData.date.toDateString()}</p>
-                        ${createDetailLine('Slot 499:', dayData.slot1, colors.value1, isTomorrow)}
-                        ${createDetailLine('Slot 500:', dayData.slot2, colors.value2, isTomorrow)}
+                        ${createDetailLine('Slot 499:', dayData.slot1, colors.value1, elementId === 'tomorrow-details')}
+                        ${createDetailLine('Slot 500:', dayData.slot2, colors.value2, elementId === 'tomorrow-details')}
                         <div class="pt-2 border-t border-gray-700/50 mt-2">
-                            ${createDetailLine('Primary Backup:', dayData.backup1, 'text-gray-300', isTomorrow)}
-                            ${createDetailLine('Secondary Backup:', dayData.backup2, 'text-gray-300', isTomorrow)}
+                            ${createDetailLine('Primary Backup:', dayData.backup1, 'text-gray-300', elementId === 'tomorrow-details')}
+                            ${createDetailLine('Secondary Backup:', dayData.backup2, 'text-gray-300', elementId === 'tomorrow-details')}
                         </div>
                         ${weatherHtml}
                         ${parkingLeftHtml}
                     </div>
                     ${reassignButtonHtml}`;
-                 if (elementId === 'today-details') {
-                     document.getElementById('reassign-button')?.addEventListener('click', handleReassignClick);
-                 }
+                if (elementId === 'today-details') {
+                    document.getElementById('reassign-button')?.addEventListener('click', handleReassignClick);
+                }
             };
 
-            const renderAccordions = () => {
+            const renderAccordions = (filteredSchedule = yearlySchedule) => {
                 const accordionContainer = document.getElementById('schedule-accordion');
                 const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
-                accordionContainer.innerHTML = Object.keys(yearlySchedule).map(monthIndex => {
-                    const monthData = yearlySchedule[monthIndex];
+                accordionContainer.innerHTML = Object.keys(filteredSchedule).map(monthIndex => {
+                    const monthData = filteredSchedule[monthIndex];
                     if (monthData.length === 0) return '';
                     const monthName = monthData[0].date.toLocaleString('default', { month: 'long', year: 'numeric' });
                     const isCurrentMonth = parseInt(monthIndex) === currentMonth;
                     return `
                         <div class="accordion-item">
-                            <button class="accordion-button w-full flex justify-between items-center text-left p-6 hover:bg-gray-700/50 transition-colors">
+                            <button class="accordion-button w-full flex justify-between items-center text-left p-6 hover:bg-gray-700/50 transition-colors" aria-expanded="${isCurrentMonth}" aria-controls="accordion-content-${monthIndex}">
                                 <span class="text-lg font-semibold text-white">${monthName}</span>
                                 <svg class="w-6 h-6 ${isCurrentMonth ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </button>
-                            <div class="accordion-content bg-gray-900" style="${isCurrentMonth ? 'max-height: 2000px;' : ''}">
+                            <div id="accordion-content-${monthIndex}" class="accordion-content bg-gray-900" style="${isCurrentMonth ? 'max-height: 2000px;' : ''}">
                                 <div class="overflow-x-auto p-2">
                                     <table class="w-full text-left">
                                         <thead class="bg-gray-700/50">
                                             <tr>
-                                                <th class="p-3 font-semibold">Date</th><th class="p-3 font-semibold">Day</th><th class="p-3 font-semibold">Slot 499</th>
-                                                <th class="p-3 font-semibold">Slot 500</th><th class="p-3 font-semibold">Primary Backup</th><th class="p-3 font-semibold">Secondary Backup</th>
+                                                <th class="p-3 font-semibold">Date</th>
+                                                <th class="p-3 font-semibold">Day</th>
+                                                <th class="p-3 font-semibold">Slot 499</th>
+                                                <th class="p-3 font-semibold">Slot 500</th>
+                                                <th class="p-3 font-semibold">Primary Backup</th>
+                                                <th class="p-3 font-semibold">Secondary Backup</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-gray-700">
                                         ${monthData.map(day => {
                                             const isToday = day.date.getDate() === currentDate && day.date.getMonth() === currentMonth;
-                                            return `<tr class="hover:bg-gray-700/50 ${isToday ? 'bg-cyan-900/40' : ''}"><td class="p-3 font-medium ${isToday ? 'text-cyan-400' : ''}">${day.date.getDate()}</td><td class="p-3 text-gray-400">${dayFormatter.format(day.date)}</td><td class="p-3">${day.slot1}</td><td class="p-3">${day.slot2}</td><td class="p-3 text-gray-400">${day.backup1}</td><td class="p-3 text-gray-400">${day.backup2}</td></tr>`
+                                            return `<tr class="hover:bg-gray-700/50 ${isToday ? 'bg-cyan-900/40' : ''}">
+                                                <td class="p-3 font-medium ${isToday ? 'text-cyan-400' : ''}">${day.date.getDate()}</td>
+                                                <td class="p-3 text-gray-400">${dayFormatter.format(day.date)}</td>
+                                                <td class="p-3">${day.slot1}</td>
+                                                <td class="p-3">${day.slot2}</td>
+                                                <td class="p-3 text-gray-400">${day.backup1}</td>
+                                                <td class="p-3 text-gray-400">${day.backup2}</td>
+                                            </tr>`;
                                         }).join('')}
                                         </tbody>
                                     </table>
@@ -398,13 +609,67 @@
                         </div>`;
                 }).join('');
                 document.querySelectorAll('.accordion-button').forEach(button => button.addEventListener('click', handleAccordionClick));
+                // Open filtered months with results
+                const query = searchBar.value.toLowerCase();
+                if (query) {
+                    document.querySelectorAll('.accordion-content').forEach(content => {
+                        if (content.querySelector('tbody tr')) {
+                            content.style.maxHeight = content.scrollHeight + 'px';
+                            content.previousElementSibling.querySelector('svg').classList.add('rotate-180');
+                            content.previousElementSibling.setAttribute('aria-expanded', 'true');
+                        }
+                    });
+                }
             };
 
+            // --- SEARCH AND FILTER ---
+            const searchBar = document.getElementById('search-bar');
+            searchBar.addEventListener('input', () => {
+                const query = searchBar.value.toLowerCase().trim();
+                const filteredSchedule = {};
+                Object.keys(yearlySchedule).forEach(month => {
+                    filteredSchedule[month] = yearlySchedule[month].filter(day => {
+                        const dateStr = day.date.toDateString().toLowerCase();
+                        const dateNum = day.date.getDate().toString();
+                        return dateStr.includes(query) ||
+                            dateNum === query ||
+                            day.slot1.toLowerCase().includes(query) ||
+                            day.slot2.toLowerCase().includes(query) ||
+                            day.backup1.toLowerCase().includes(query) ||
+                            day.backup2.toLowerCase().includes(query);
+                    });
+                });
+                renderAccordions(filteredSchedule);
+            });
+
+            // --- MONTH DROPDOWN ---
+            const monthDropdown = document.getElementById('month-dropdown');
+            Object.keys(yearlySchedule).forEach(month => {
+                const monthName = new Date(year, month, 1).toLocaleString('default', { month: 'long' });
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = monthName;
+                monthDropdown.appendChild(option);
+            });
+            monthDropdown.addEventListener('change', () => {
+                const month = monthDropdown.value;
+                if (month) {
+                    const accordion = document.getElementById(`accordion-content-${month}`);
+                    const button = accordion?.previousElementSibling;
+                    if (button && accordion) {
+                        button.click();
+                        accordion.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }
+            });
+
+            // --- ACCORDION HANDLER ---
             const handleAccordionClick = (e) => {
                 const button = e.currentTarget;
                 const content = button.nextElementSibling;
                 const svg = button.querySelector('svg');
                 const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+                button.setAttribute('aria-expanded', !isOpen);
                 if (isOpen) {
                     content.style.maxHeight = '0px';
                     svg.classList.remove('rotate-180');
@@ -413,10 +678,10 @@
                     svg.classList.add('rotate-180');
                 }
             };
-            
+
             // --- MODAL & REASSIGNMENT LOGIC ---
             const modal = document.getElementById('reassign-modal');
-            const modalBox = modal.querySelector('div');
+            const modalBox = modal.querySelector('.modal-box');
             const closeModalButton = document.getElementById('close-modal-button');
             const modalContent = document.getElementById('modal-content');
             const openModal = () => {
@@ -432,7 +697,6 @@
                 const tomorrowData = findNextWorkingDayData(new Date());
                 const exclusionList = tomorrowData ? [tomorrowData.slot1, tomorrowData.slot2, tomorrowData.backup1, tomorrowData.backup2] : [];
                 const candidatePool = members.filter(member => !exclusionList.includes(member));
-                
                 if (candidatePool.length < 2) {
                     modalContent.innerHTML = `<p class="text-red-400">Not enough members for replacements.</p>`;
                 } else {
@@ -443,35 +707,51 @@
                     modalContent.innerHTML = `
                         <p class="text-gray-400 mb-4">The following members have been selected:</p>
                         <div class="space-y-3 text-lg">
-                            <div class="bg-gray-700 p-3 rounded-lg">${createDetailLine('Primary:', candidatePool[0], 'text-green-400')}</div>
-                            <div class="bg-gray-700 p-3 rounded-lg">${createDetailLine('Secondary:', candidatePool[1], 'text-yellow-400')}</div>
+                            ${createDetailLine('Primary:', candidatePool[0], 'text-green-400')}
+                            ${createDetailLine('Secondary:', candidatePool[1], 'text-yellow-400')}
                         </div>`;
                 }
                 openModal();
             };
-            
+
+            // --- KEYBOARD NAVIGATION ---
+            const focusableElements = document.querySelectorAll('button, input, select, [tabindex]:not([tabindex="-1"])');
+            focusableElements.forEach((el, index) => {
+                el.setAttribute('tabindex', 0);
+                el.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        el.click();
+                    }
+                    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        const nextIndex = (index + 1) % focusableElements.length;
+                        focusableElements[nextIndex].focus();
+                    }
+                    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const prevIndex = (index - 1 + focusableElements.length) % focusableElements.length;
+                        focusableElements[prevIndex].focus();
+                    }
+                });
+            });
+
             // --- INITIALIZATION ---
             const initializeApp = async () => {
                 updateClock();
                 setInterval(updateClock, 1000);
-                
                 const { todayWeather, tomorrowWeather } = await fetchWeatherData();
-                
                 const todayData = findDayData(today);
                 const tomorrowData = findNextWorkingDayData(today);
                 const remainingSlots = calculateRemainingSlots(yearlySchedule, today);
-                
                 const nextDayTitle = document.getElementById('next-day-title');
                 if (tomorrowData) {
                     const diffDays = Math.ceil((new Date(tomorrowData.date).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
                     nextDayTitle.textContent = (diffDays === 1) ? "Tomorrow's Parking" : `${tomorrowData.date.toLocaleDateString('en-US', { weekday: 'long' })}'s Parking`;
                 }
-
                 populateInfoCard('today-details', todayData, { value1: 'text-cyan-300', value2: 'text-cyan-300' }, 'Not a working day.', todayWeather, null);
                 populateInfoCard('tomorrow-details', tomorrowData, { value1: 'text-purple-300', value2: 'text-purple-300' }, 'No upcoming working day.', tomorrowWeather, remainingSlots);
-
                 renderAccordions();
-                
                 closeModalButton.addEventListener('click', closeModal);
                 modal.addEventListener('click', (e) => e.target === modal && closeModal());
             };
