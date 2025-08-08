@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annual Bike Parking Schedule</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #111827; /* bg-gray-900 */
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .accordion-button svg {
+            transition: transform 0.3s ease-in-out;
+        }
+        .modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* --- Weather Animations --- */
+        @keyframes lightning-blink {
+          0%, 95%, 100% { border-color: #374151; box-shadow: none; }
+          96% { border-color: #a5f3fc; box-shadow: 0 0 25px #22d3ee, inset 0 0 15px #67e8f9; }
+          98% { border-color: #374151; box-shadow: none; }
+        }
+        .weather-thunderstorm { animation: lightning-blink 4s infinite; }
+
+        @keyframes rain-fall {
+            0% { background-position: 0px 0px; }
+            100% { background-position: 60px 1000px; }
+        }
+        .weather-showers { position: relative; overflow: hidden; }
+        .weather-showers::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(165deg, transparent 49.5%, rgba(147, 197, 253, 0.6) 50%, transparent 50.5%);
+            background-size: 35px 35px; animation: rain-fall 1.2s linear infinite; opacity: 0.3; pointer-events: none; z-index: 1;
+        }
+
+        @keyframes sunny-glow {
+            0%, 100% { border-color: #374151; box-shadow: none; }
+            50% { border-color: #fcd34d; box-shadow: 0 0 20px #fca5a5, inset 0 0 10px #fde68a; }
+        }
+        .weather-clear { animation: sunny-glow 5s infinite ease-in-out; }
+
+        @keyframes move-clouds {
+            0% { background-position: 0 0; }
+            100% { background-position: 560px 0; }
+        }
+        .weather-cloudy { position: relative; overflow: hidden; }
+        .weather-cloudy::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 180" fill="rgba(255,255,255,0.1)"><path d="M140 120 A60 60 0 1 1 140 0 A40 40 0 1 1 220 40 L220 120 Z M350 150 A70 70 0 1 1 350 10 A50 50 0 1 1 450 60 L450 150 Z M50 180 A50 50 0 1 1 50 80 A30 30 0 1 1 110 110 L110 180 Z"></path></svg>');
+            animation: move-clouds 15s linear infinite;
+            opacity: 0.2;
+            z-index: 1;
+        }
+
+        /* --- Bike Animation --- */
+        @keyframes move-bike {
+            from { transform: translateX(-150%); opacity: 0; }
+            25% { transform: translateX(0); opacity: 1; }
+            75% { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(150%); opacity: 0; }
+        }
+        .bike-animation {
+            animation: move-bike 3.5s ease-in-out infinite;
+            animation-delay: 0.5s;
+        }
+
+    </style>
+</head>
+<body class="text-gray-200 antialiased">
+
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        <header class="text-center mb-10">
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                <h1 class="text-3xl md:text-4xl font-bold text-white">Annual Bike Parking Schedule</h1>
+                <div id="live-clock" class="text-xl md:text-2xl font-mono bg-gray-800 text-cyan-400 px-4 py-1 rounded-lg border border-gray-700">
+                    00:00:00
+                </div>
+            </div>
+            <p class="text-lg text-gray-400 mt-2">A fair rotation for all team members throughout the year.</p>
+        </header>
+
+        <main>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col">
+                    <h2 class="text-xl font-semibold text-cyan-400 mb-4">Today's Parking</h2>
+                    <div id="today-details" class="space-y-3 flex-grow">
+                        <p class="text-gray-500">Loading...</p>
+                    </div>
+                </div>
+                <div id="tomorrow-card" class="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col">
+                    <h2 id="next-day-title" class="text-xl font-semibold text-purple-400 mb-4">Next Day's Parking</h2>
+                    <div id="tomorrow-details" class="space-y-3 flex-grow">
+                         <p class="text-gray-500">Loading...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-800 rounded-xl shadow-lg border border-gray-700">
+                 <h2 class="text-xl font-semibold text-white p-6 border-b border-gray-700">Yearly Schedule</h2>
+                <div id="schedule-accordion" class="divide-y divide-gray-700"></div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 text-gray-500 text-sm">
+            <p>Designed for efficient parking management.</p>
+        </footer>
+    </div>
+    
+    <div id="reassign-modal" class="modal fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center p-4 opacity-0 pointer-events-none z-50">
+        <div class="bg-gray-800 rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-md border border-gray-700 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-2xl font-bold text-white">Parking Replacements</h3>
+                <button id="close-modal-button" class="text-gray-400 hover:text-white text-3xl leading-none">&times;</button>
+            </div>
+            <div id="modal-content" class="text-center"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const members = ['Akhil', 'Arjun Reeja', 'Arjun V K', 'Chanthuraj', 'Dayanitta', 'Eby', 'Rishil', 'Shehmil', 'Sumesh'];
+            const year = new Date().getFullYear();
+            
+            // --- REAL-TIME WEATHER LOGIC ---
+            const fetchWeatherData = async () => {
+                const lat = 9.93; // Kochi Latitude
+                const lon = 76.27; // Kochi Longitude
+                const apiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=Asia/Kolkata`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) throw new Error('Weather data not available.');
+                    const data = await response.json();
+                    
+                    const today = new Date();
+                    const todayStr = `${today.toISOString().split('T')[0]}T18:00`;
+                    const todayIndex = data.hourly.time.findIndex(t => t === todayStr);
+
+                    const tomorrow = new Date();
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+                    const tomorrowStr = `${tomorrow.toISOString().split('T')[0]}T09:00`;
+                    const tomorrowIndex = data.hourly.time.findIndex(t => t === tomorrowStr);
+                    
+                    const todayWeather = (todayIndex !== -1) ? parseWeatherData(data, todayIndex, "Evening Forecast") : null;
+                    const tomorrowWeather = (tomorrowIndex !== -1) ? parseWeatherData(data, tomorrowIndex, "Morning Forecast") : null;
+                    
+                    return { todayWeather, tomorrowWeather };
+                } catch (error) {
+                    console.error("Failed to fetch weather:", error);
+                    return { todayWeather: null, tomorrowWeather: null };
+                }
+            };
+            
+            const parseWeatherData = (data, index, forecastType) => {
+                const weatherCode = data.hourly.weather_code[index];
+                const { condition, icon } = getWeatherCondition(weatherCode);
+                return {
+                    forecastType,
+                    condition,
+                    icon,
+                    high: Math.round(data.hourly.temperature_2m[index]),
+                    low: Math.round(data.hourly.temperature_2m[index]),
+                    feelsLike: Math.round(data.hourly.apparent_temperature[index]),
+                    wind: Math.round(data.hourly.wind_speed_10m[index]),
+                };
+            };
+            
+            const getWeatherCondition = (code) => {
+                if (code === 0) return { condition: 'Clear', icon: getWeatherIcon('Clear') };
+                if ([1, 2, 3].includes(code)) return { condition: 'Cloudy', icon: getWeatherIcon('Cloudy') };
+                if ([45, 48].includes(code)) return { condition: 'Fog', icon: getWeatherIcon('Fog') };
+                if ([51, 53, 55, 61, 63, 65, 80, 81, 82].includes(code)) return { condition: 'Showers', icon: getWeatherIcon('Showers') };
+                if ([95, 96, 99].includes(code)) return { condition: 'Thunderstorm', icon: getWeatherIcon('Thunderstorm') };
+                return { condition: 'Cloudy', icon: getWeatherIcon('Cloudy') }; // Default
+            };
+
+            const getWeatherIcon = (condition) => {
+                 const icons = {
+                    'Thunderstorm': `<svg class="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM19.5 16.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM12 2.5a4.5 4.5 0 00-4.5 4.5v.5a5 5 0 00-.25 9.975h13.5A5 5 0 0017 7.5v-.5A4.5 4.5 0 0012 2.5zM12 13.5l-2.5 4.5h5L12 13.5z"></path></svg>`,
+                    'Showers': `<svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.25-9.975A4.5 4.5 0 0012 2.5a4.5 4.5 0 00-4.5 4.5v.5A4.5 4.5 0 003 15z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 19v1m4-1v1m4-1v1"></path></svg>`,
+                    'Clear': `<svg class="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>`,
+                    'Cloudy': `<svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 15a4 4 0 004 4h9a5 5 0 10-.25-9.975A4.5 4.5 0 0012 2.5C9.24 2.5 7 4.74 7 7.5v.5A4.5 4.5 0 003 15z"></path></svg>`,
+                    'Fog': `<svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 12h16.5M3.75 6.75h16.5M3.75 17.25h16.5" /></svg>`
+                 };
+                 return icons[condition] || icons['Cloudy'];
+            };
+
+
+            // --- DATA GENERATION ---
+            const generateYearlySchedule = () => {
+                const yearlyData = {};
+                let rotationIndex = 0;
+                const getNextMembers = (count) => {
+                    const result = [];
+                    for (let i = 0; i < count; i++) {
+                        result.push(members[rotationIndex % members.length]);
+                        rotationIndex++;
+                    }
+                    return result;
+                };
+                for (let month = 0; month < 12; month++) {
+                    const workingDays = [];
+                    const date = new Date(year, month, 1);
+                    while (date.getMonth() === month) {
+                        const dayOfWeek = date.getDay();
+                        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
+                            workingDays.push(new Date(date));
+                        }
+                        date.setDate(date.getDate() + 1);
+                    }
+                    yearlyData[month] = workingDays.map(d => {
+                        const dayAssignments = getNextMembers(4);
+                        return { date: d, slot1: dayAssignments[0], slot2: dayAssignments[1], backup1: dayAssignments[2], backup2: dayAssignments[3] };
+                    });
+                }
+                return yearlyData;
+            };
+
+            const yearlySchedule = generateYearlySchedule();
+
+            // --- DATE & TIME LOGIC ---
+            const today = new Date();
+            const currentMonth = today.getMonth();
+            const currentDate = today.getDate();
+
+            const updateClock = () => {
+                const clockElement = document.getElementById('live-clock');
+                if (clockElement) {
+                    const now = new Date();
+                    const options = { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit', second: '2-digit', hour12: true };
+                    clockElement.textContent = now.toLocaleTimeString('en-IN', options);
+                }
+            };
+            
+            const calculateRemainingSlots = (schedule, startDate) => {
+                const remaining = {};
+                members.forEach(m => remaining[m] = 0);
+                for (let month = 0; month < 12; month++) {
+                    schedule[month].forEach(day => {
+                        if (new Date(day.date) > startDate) {
+                            if (remaining[day.slot1] !== undefined) remaining[day.slot1]++;
+                            if (remaining[day.slot2] !== undefined) remaining[day.slot2]++;
+                        }
+                    });
+                }
+                return remaining;
+            };
+
+            const findDayData = (dateToFind) => {
+                const monthData = yearlySchedule[dateToFind.getMonth()];
+                if (!monthData) return null;
+                return monthData.find(d => new Date(d.date).toDateString() === dateToFind.toDateString());
+            };
+            
+            const findNextWorkingDayData = (currentDate) => {
+                 let nextDay = new Date(currentDate);
+                 for(let i=0; i<7; i++){
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    if(nextDay.getDay() >= 1 && nextDay.getDay() <= 5){
+                        const dayData = findDayData(nextDay);
+                        if(dayData) return dayData;
+                    }
+                 }
+                 return null;
+            };
+            
+            // --- UI RENDERING ---
+            const createDetailLine = (label, value, valueColorClass, isTomorrowCard = false) => {
+                let specialAnimation = '';
+                if (isTomorrowCard && value === 'Dayanitta') {
+                    const bikeSVG = `<svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-lime-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 17.5A2.5 2.5 0 107.5 12.5a2.5 2.5 0 000 5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 17.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 15h9M7.5 15L6 9h12l-1.5 6M9.5 9l2.5-4 2.5 4" /></svg>`;
+                    specialAnimation = `<span class="inline-block bike-animation ml-2">${bikeSVG}</span>`;
+                }
+                return `
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-400">${label}</span>
+                        <span class="font-semibold ${valueColorClass} flex items-center">
+                            ${value || 'N/A'}
+                            ${specialAnimation}
+                        </span>
+                    </div>`;
+            };
+
+            const populateInfoCard = (elementId, dayData, colors, defaultText, weatherData, remainingSlots) => {
+                const container = document.getElementById(elementId);
+                const cardElement = container.parentElement;
+
+                cardElement.className = 'bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 flex flex-col'; // Reset classes
+                const contentElements = [container, cardElement.querySelector('h2')];
+                contentElements.forEach(el => el && Object.assign(el.style, { position: '', zIndex: '' }));
+
+                if (!dayData) {
+                    container.innerHTML = `<p class="text-gray-500">${defaultText}</p>`;
+                    return;
+                }
+
+                if (weatherData) {
+                    const weatherClass = `weather-${weatherData.condition.toLowerCase()}`;
+                    cardElement.classList.add(weatherClass);
+                    if (['weather-showers', 'weather-cloudy'].includes(weatherClass)) {
+                        contentElements.forEach(el => el && Object.assign(el.style, { position: 'relative', zIndex: '2' }));
+                    }
+                }
+
+                const weatherHtml = weatherData ? `
+                    <div class="mt-4 pt-4 border-t border-gray-700/50">
+                        <div class="flex items-start gap-4">
+                            <div>${weatherData.icon}</div>
+                            <div class="flex-1">
+                                <p class="font-semibold text-lg text-white">${weatherData.forecastType}: ${weatherData.condition}</p>
+                                <div class="text-sm text-gray-400 grid grid-cols-2 gap-x-4">
+                                    <span>Temp: ${weatherData.high}°C</span>
+                                    <span>Feels like: ${weatherData.feelsLike}°C</span>
+                                    <span>Wind: ${weatherData.wind} km/h</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>` : '<div class="mt-4 pt-4 border-t border-gray-700/50 text-center text-gray-500">Weather data unavailable.</div>';
+
+                let parkingLeftHtml = '';
+                if (remainingSlots) {
+                    parkingLeftHtml = `
+                        <div class="mt-3 pt-3 border-t border-gray-700/50 text-xs text-gray-400 space-y-1">
+                            <p><span class="font-semibold text-gray-200">${dayData.slot1}</span> has <span class="text-purple-300 font-bold">${(remainingSlots[dayData.slot1] || 0) + 1}</span> slots left.</p>
+                            <p><span class="font-semibold text-gray-200">${dayData.slot2}</span> has <span class="text-purple-300 font-bold">${(remainingSlots[dayData.slot2] || 0) + 1}</span> slots left.</p>
+                        </div>`;
+                }
+                
+                const reassignButtonHtml = (elementId === 'today-details') ? `
+                    <div class="mt-auto pt-4">
+                        <p class="text-xs text-gray-500 text-center mb-2">If members are unavailable:</p>
+                        <button id="reassign-button" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" /></svg>
+                            Find Replacements
+                        </button>
+                    </div>` : '';
+                
+                const isTomorrow = elementId === 'tomorrow-details';
+                container.innerHTML = `
+                    <div class="flex-grow">
+                        <p class="text-sm text-gray-500 mb-2">${dayData.date.toDateString()}</p>
+                        ${createDetailLine('Slot 499:', dayData.slot1, colors.value1, isTomorrow)}
+                        ${createDetailLine('Slot 500:', dayData.slot2, colors.value2, isTomorrow)}
+                        <div class="pt-2 border-t border-gray-700/50 mt-2">
+                            ${createDetailLine('Primary Backup:', dayData.backup1, 'text-gray-300', isTomorrow)}
+                            ${createDetailLine('Secondary Backup:', dayData.backup2, 'text-gray-300', isTomorrow)}
+                        </div>
+                        ${weatherHtml}
+                        ${parkingLeftHtml}
+                    </div>
+                    ${reassignButtonHtml}`;
+                 if (elementId === 'today-details') {
+                     document.getElementById('reassign-button')?.addEventListener('click', handleReassignClick);
+                 }
+            };
+
+            const renderAccordions = () => {
+                const accordionContainer = document.getElementById('schedule-accordion');
+                const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+                accordionContainer.innerHTML = Object.keys(yearlySchedule).map(monthIndex => {
+                    const monthData = yearlySchedule[monthIndex];
+                    if (monthData.length === 0) return '';
+                    const monthName = monthData[0].date.toLocaleString('default', { month: 'long', year: 'numeric' });
+                    const isCurrentMonth = parseInt(monthIndex) === currentMonth;
+                    return `
+                        <div class="accordion-item">
+                            <button class="accordion-button w-full flex justify-between items-center text-left p-6 hover:bg-gray-700/50 transition-colors">
+                                <span class="text-lg font-semibold text-white">${monthName}</span>
+                                <svg class="w-6 h-6 ${isCurrentMonth ? 'rotate-180' : ''}" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+                            <div class="accordion-content bg-gray-900" style="${isCurrentMonth ? 'max-height: 2000px;' : ''}">
+                                <div class="overflow-x-auto p-2">
+                                    <table class="w-full text-left">
+                                        <thead class="bg-gray-700/50">
+                                            <tr>
+                                                <th class="p-3 font-semibold">Date</th><th class="p-3 font-semibold">Day</th><th class="p-3 font-semibold">Slot 499</th>
+                                                <th class="p-3 font-semibold">Slot 500</th><th class="p-3 font-semibold">Primary Backup</th><th class="p-3 font-semibold">Secondary Backup</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-gray-700">
+                                        ${monthData.map(day => {
+                                            const isToday = day.date.getDate() === currentDate && day.date.getMonth() === currentMonth;
+                                            return `<tr class="hover:bg-gray-700/50 ${isToday ? 'bg-cyan-900/40' : ''}"><td class="p-3 font-medium ${isToday ? 'text-cyan-400' : ''}">${day.date.getDate()}</td><td class="p-3 text-gray-400">${dayFormatter.format(day.date)}</td><td class="p-3">${day.slot1}</td><td class="p-3">${day.slot2}</td><td class="p-3 text-gray-400">${day.backup1}</td><td class="p-3 text-gray-400">${day.backup2}</td></tr>`
+                                        }).join('')}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+                document.querySelectorAll('.accordion-button').forEach(button => button.addEventListener('click', handleAccordionClick));
+            };
+
+            const handleAccordionClick = (e) => {
+                const button = e.currentTarget;
+                const content = button.nextElementSibling;
+                const svg = button.querySelector('svg');
+                const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+                if (isOpen) {
+                    content.style.maxHeight = '0px';
+                    svg.classList.remove('rotate-180');
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    svg.classList.add('rotate-180');
+                }
+            };
+            
+            // --- MODAL & REASSIGNMENT LOGIC ---
+            const modal = document.getElementById('reassign-modal');
+            const modalBox = modal.querySelector('div');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const modalContent = document.getElementById('modal-content');
+            const openModal = () => {
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+                modalBox.classList.remove('scale-95');
+            };
+            const closeModal = () => {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+                modalBox.classList.add('scale-95');
+            };
+
+            const handleReassignClick = () => {
+                const tomorrowData = findNextWorkingDayData(new Date());
+                const exclusionList = tomorrowData ? [tomorrowData.slot1, tomorrowData.slot2, tomorrowData.backup1, tomorrowData.backup2] : [];
+                const candidatePool = members.filter(member => !exclusionList.includes(member));
+                
+                if (candidatePool.length < 2) {
+                    modalContent.innerHTML = `<p class="text-red-400">Not enough members for replacements.</p>`;
+                } else {
+                    for (let i = candidatePool.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [candidatePool[i], candidatePool[j]] = [candidatePool[j], candidatePool[i]];
+                    }
+                    modalContent.innerHTML = `
+                        <p class="text-gray-400 mb-4">The following members have been selected:</p>
+                        <div class="space-y-3 text-lg">
+                            <div class="bg-gray-700 p-3 rounded-lg">${createDetailLine('Primary:', candidatePool[0], 'text-green-400')}</div>
+                            <div class="bg-gray-700 p-3 rounded-lg">${createDetailLine('Secondary:', candidatePool[1], 'text-yellow-400')}</div>
+                        </div>`;
+                }
+                openModal();
+            };
+            
+            // --- INITIALIZATION ---
+            const initializeApp = async () => {
+                updateClock();
+                setInterval(updateClock, 1000);
+                
+                const { todayWeather, tomorrowWeather } = await fetchWeatherData();
+                
+                const todayData = findDayData(today);
+                const tomorrowData = findNextWorkingDayData(today);
+                const remainingSlots = calculateRemainingSlots(yearlySchedule, today);
+                
+                const nextDayTitle = document.getElementById('next-day-title');
+                if (tomorrowData) {
+                    const diffDays = Math.ceil((new Date(tomorrowData.date).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / (1000 * 60 * 60 * 24));
+                    nextDayTitle.textContent = (diffDays === 1) ? "Tomorrow's Parking" : `${tomorrowData.date.toLocaleDateString('en-US', { weekday: 'long' })}'s Parking`;
+                }
+
+                populateInfoCard('today-details', todayData, { value1: 'text-cyan-300', value2: 'text-cyan-300' }, 'Not a working day.', todayWeather, null);
+                populateInfoCard('tomorrow-details', tomorrowData, { value1: 'text-purple-300', value2: 'text-purple-300' }, 'No upcoming working day.', tomorrowWeather, remainingSlots);
+
+                renderAccordions();
+                
+                closeModalButton.addEventListener('click', closeModal);
+                modal.addEventListener('click', (e) => e.target === modal && closeModal());
+            };
+
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
