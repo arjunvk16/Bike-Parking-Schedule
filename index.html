@@ -15,10 +15,9 @@
             scroll-behavior: smooth;
         }
 
-        /* Responsive Container */
         .app-container {
             width: 100%;
-            max-width: 72rem; /* max-w-6xl */
+            max-width: 72rem;
             margin-left: auto;
             margin-right: auto;
             padding-left: 1rem;
@@ -49,23 +48,9 @@
         .highlight-card::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
+            top: 0; left: 0; right: 0; height: 1px;
             background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
             z-index: 1;
-        }
-
-        .highlight-card::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 60%);
-            pointer-events: none;
         }
 
         .search-input {
@@ -99,7 +84,6 @@
             border: 1px solid rgba(59, 130, 246, 0.15);
         }
 
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #0a0a0c; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
@@ -135,16 +119,11 @@
             max-height: 100px;
         }
 
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        /* Excel View Table Styles */
         .excel-table {
             border-collapse: separate;
             border-spacing: 0;
             width: 100%;
-            min-width: 800px; /* Ensures table doesn't collapse on mobile */
+            min-width: 800px;
         }
         .excel-table th {
             background: #18181b;
@@ -169,7 +148,6 @@
         }
         .excel-table .holiday-row {
             background: rgba(239, 68, 68, 0.03);
-            color: #71717a;
         }
 
         @media (max-width: 640px) {
@@ -182,7 +160,6 @@
 <body class="antialiased">
 
     <div class="app-container py-6 md:py-10">
-        <!-- Header Section -->
         <header class="sticky-header py-4 mb-8 border-b border-white/5">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
@@ -197,62 +174,45 @@
                         <input 
                             type="text" 
                             id="searchInput" 
-                            placeholder="Search name, date, or status..." 
+                            placeholder="Search name, date, or holiday..." 
                             class="search-input w-full px-5 py-3 rounded-2xl text-zinc-200 text-sm placeholder-zinc-600 shadow-xl"
                         >
-                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-700 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        </div>
                     </div>
-                    <button onclick="exportToCSV()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 px-5 py-3 rounded-2xl text-sm font-semibold transition-all flex items-center justify-center gap-2 active:scale-95 border border-white/5">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <button onclick="exportToCSV()" class="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 px-5 py-3 rounded-2xl text-sm font-semibold transition-all border border-white/5">
                         Export CSV
                     </button>
                 </div>
             </div>
 
-            <!-- Month Filter -->
-            <div id="monthFilter" class="flex gap-2 overflow-x-auto py-5 no-scrollbar">
-                <!-- Months injected here -->
-            </div>
+            <div id="monthFilter" class="flex gap-2 overflow-x-auto py-5 no-scrollbar"></div>
         </header>
 
-        <!-- Quick Glance Section -->
+        <!-- Quick Glance -->
         <section id="quickGlanceSection" class="mb-12">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                 <h2 class="text-xs font-black text-zinc-500 uppercase tracking-[0.25em] flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-                    Quick Glance
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Quick Glance
                 </h2>
                 <div class="flex items-center gap-4 bg-zinc-900/50 px-4 py-2 rounded-xl border border-white/5">
-                    <span class="text-[10px] text-zinc-500 font-medium">Rotation Active</span>
                     <span id="currentTime" class="text-xs text-blue-400 font-mono font-bold"></span>
                 </div>
             </div>
-            <div id="quickGlance" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Today and Tomorrow cards -->
-            </div>
+            <div id="quickGlance" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </section>
 
-        <!-- Allocation Feed/Table -->
+        <!-- Main View -->
         <section>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <h2 class="text-xs font-black text-zinc-500 uppercase tracking-[0.25em] flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-700"></span>
-                    Full Schedule
+                    <span class="w-1.5 h-1.5 rounded-full bg-zinc-700"></span> Full Schedule
                 </h2>
                 <div class="flex items-center bg-zinc-900/80 p-1.5 rounded-2xl border border-white/5">
-                    <button onclick="setView('feed')" id="feedBtn" class="text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all bg-blue-500 text-white shadow-lg">Card View</button>
-                    <button onclick="setView('excel')" id="excelBtn" class="text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all text-zinc-500 hover:text-zinc-300">Excel View</button>
+                    <button onclick="setView('feed')" id="feedBtn" class="text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all bg-blue-500 text-white">Card View</button>
+                    <button onclick="setView('excel')" id="excelBtn" class="text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all text-zinc-500">Excel View</button>
                 </div>
             </div>
             
-            <!-- Feed Container -->
-            <div id="allocationFeed" class="space-y-4">
-                <!-- Content generated by JS -->
-            </div>
-
-            <!-- Excel Table Container (Hidden by default) -->
+            <div id="allocationFeed" class="space-y-4"></div>
             <div id="allocationExcel" class="hidden glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
                 <div class="overflow-x-auto custom-scrollbar">
                     <table class="excel-table">
@@ -266,33 +226,35 @@
                                 <th>Secondary Backup</th>
                             </tr>
                         </thead>
-                        <tbody id="excelBody">
-                            <!-- Content generated by JS -->
-                        </tbody>
+                        <tbody id="excelBody"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <!-- Empty State -->
         <div id="emptyState" class="hidden text-center py-24">
-            <div class="bg-zinc-900/50 w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-zinc-700 border border-white/5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-            </div>
-            <h3 class="text-zinc-300 font-semibold mb-2">No results found</h3>
-            <p class="text-zinc-600 text-sm mb-6">Try adjusting your search or clearing month filters.</p>
-            <button onclick="resetFilters()" class="text-blue-500 text-xs font-bold uppercase tracking-widest hover:text-blue-400 transition-colors">Reset All Filters</button>
+            <p class="text-zinc-600 text-sm">No results found.</p>
         </div>
     </div>
 
     <script>
-        // Constants
         const members = ["Arjun V K", "Eby", "Kunuvava", "Arjun Reeja", "Shehmil", "Chanthuraj", "Sumesh", "Dayanitta", "Akhil"];
-        const holidays = ["2026-01-26", "2026-04-03", "2026-04-15", "2026-05-01", "2026-05-27", "2026-08-25", "2026-08-26", "2026-10-02", "2026-10-20", "2026-12-25"];
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        
+        // Accurate Holiday Calendar with Names
+        const holidays = {
+            "2026-01-26": "Republic Day",
+            "2026-04-03": "Good Friday",
+            "2026-04-15": "Vishu",
+            "2026-05-01": "May Day",
+            "2026-05-27": "Id-ul-Ad’ha Bakrid",
+            "2026-08-25": "First Onam/Milad-i-Sherif",
+            "2026-08-26": "Thiruvonam",
+            "2026-10-02": "Gandhi Jayanthi",
+            "2026-10-20": "Mahanavami",
+            "2026-12-25": "Christmas"
+        };
 
+        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         let masterData = [];
         let activeMonth = null;
         let currentView = 'feed';
@@ -303,22 +265,25 @@
 
             for (let m = 0; m < 12; m++) {
                 for (let d = 1; d <= 31; d++) {
-                    let date = new Date(2026, m, d);
+                    const date = new Date(2026, m, d);
                     if (date.getMonth() !== m) continue;
                     
+                    // Skip Weekends
                     if (date.getDay() === 0 || date.getDay() === 6) continue;
 
-                    let dateKey = date.toISOString().split('T')[0];
-                    let isHoliday = holidays.includes(dateKey);
+                    // Fixed Local Date Key Generation (Avoids timezone shifting bugs)
+                    const dateKey = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+                    const holidayName = holidays[dateKey];
+                    const isHoliday = !!holidayName;
                     
                     let entry = {
                         id: dateKey,
                         month: months[m],
-                        dateObj: date,
                         displayDate: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
                         dayName: date.toLocaleDateString('en-US', { weekday: 'long' }),
                         fullDateString: date.toDateString(),
                         isHoliday: isHoliday,
+                        holidayName: holidayName,
                         assignments: null,
                         standby: []
                     };
@@ -354,9 +319,9 @@
                         <div>
                             <span class="badge-today bg-zinc-800 border-zinc-700 text-zinc-500 mb-4 inline-block">${item.label}</span>
                             <p class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">${item.displayDate}</p>
-                            <h3 class="text-2xl font-bold text-zinc-300 italic">Public Holiday</h3>
+                            <h3 class="text-2xl font-bold text-red-400/80 italic">${item.holidayName}</h3>
                         </div>
-                        <div class="text-[10px] text-red-500/80 font-black uppercase tracking-[0.2em]">Office Closed</div>
+                        <div class="text-[10px] text-zinc-600 font-black uppercase tracking-[0.2em]">Office Closed</div>
                     </div>
                 `;
             }
@@ -369,21 +334,19 @@
                             <p class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">${item.displayDate}</p>
                         </div>
                     </div>
-                    
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 relative z-10">
-                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
                             <span class="text-[9px] uppercase text-blue-400 font-black tracking-widest opacity-70 mb-1 block">Slot 499</span>
                             <p class="text-lg font-bold text-white truncate">${item.assignments.slot499}</p>
                         </div>
-                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                        <div class="p-4 rounded-2xl bg-white/5 border border-white/5">
                             <span class="text-[9px] uppercase text-blue-400 font-black tracking-widest opacity-70 mb-1 block">Slot 500</span>
                             <p class="text-lg font-bold text-white truncate">${item.assignments.slot500}</p>
                         </div>
                     </div>
-
                     <div class="text-[10px] text-zinc-500 flex flex-wrap gap-4 justify-between border-t border-white/5 pt-5 relative z-10">
-                        <span class="font-medium tracking-wide">Primary Backup: <strong class="text-zinc-300 ml-1 font-bold uppercase">${item.assignments.backupP}</strong></span>
-                        <span class="font-medium tracking-wide">Secondary: <strong class="text-zinc-300 ml-1 font-bold uppercase">${item.assignments.backupS}</strong></span>
+                        <span>Backup: <strong class="text-zinc-300 ml-1 uppercase">${item.assignments.backupP}</strong></span>
+                        <span>Sec: <strong class="text-zinc-300 ml-1 uppercase">${item.assignments.backupS}</strong></span>
                     </div>
                 </div>
             `;
@@ -393,9 +356,7 @@
             const container = document.getElementById('monthFilter');
             container.innerHTML = `<div class="month-chip active border border-white/10 px-6 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest" onclick="setMonth(null, this)">All Year</div>` + 
                 months.map(m => `
-                    <div class="month-chip border border-white/10 px-6 py-2 rounded-2xl text-zinc-500 text-xs font-bold uppercase tracking-widest hover:border-white/20" onclick="setMonth('${m}', this)">
-                        ${m}
-                    </div>
+                    <div class="month-chip border border-white/10 px-6 py-2 rounded-2xl text-zinc-500 text-xs font-bold uppercase tracking-widest" onclick="setMonth('${m}', this)">${m}</div>
                 `).join('');
         }
 
@@ -421,12 +382,12 @@
                 feedContainer.classList.remove('hidden');
                 excelContainer.classList.add('hidden');
                 feedBtn.className = "text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all bg-blue-500 text-white shadow-lg";
-                excelBtn.className = "text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all text-zinc-500 hover:text-zinc-300";
+                excelBtn.className = "text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all text-zinc-500";
             } else {
                 feedContainer.classList.add('hidden');
                 excelContainer.classList.remove('hidden');
                 excelBtn.className = "text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all bg-blue-500 text-white shadow-lg";
-                feedBtn.className = "text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all text-zinc-500 hover:text-zinc-300";
+                feedBtn.className = "text-[10px] font-bold uppercase py-2 px-6 rounded-xl transition-all text-zinc-500";
             }
             renderViewData(document.getElementById('searchInput').value);
         }
@@ -440,12 +401,9 @@
             const filteredData = masterData.filter(item => {
                 const matchesMonth = !activeMonth || item.month === activeMonth;
                 if (!matchesMonth) return false;
-
                 if (!query) return true;
-                if (item.id.includes(query)) return true;
+                if (item.holidayName?.toLowerCase().includes(query)) return true;
                 if (item.fullDateString.toLowerCase().includes(query)) return true;
-                if (item.isHoliday) return "holiday".includes(query);
-                
                 return item.assignments?.slot499.toLowerCase().includes(query) ||
                        item.assignments?.slot500.toLowerCase().includes(query) ||
                        item.assignments?.backupP.toLowerCase().includes(query) ||
@@ -453,12 +411,10 @@
             });
 
             if (filteredData.length === 0) {
-                feed.innerHTML = "";
-                excelBody.innerHTML = "";
+                feed.innerHTML = ""; excelBody.innerHTML = "";
                 emptyState.classList.remove('hidden');
                 return;
             }
-
             emptyState.classList.add('hidden');
 
             if (currentView === 'feed') {
@@ -467,12 +423,11 @@
                         return `
                             <div class="glass-card rounded-2xl p-5 flex items-center justify-between opacity-50 border-l-4 border-red-500/20">
                                 <span class="text-[10px] font-black text-zinc-500 uppercase tracking-widest w-32">${item.displayDate}</span>
-                                <span class="text-xs font-bold text-zinc-400">Public Holiday</span>
-                                <span class="text-[9px] text-red-500/50 font-black uppercase tracking-widest">Office Closed</span>
+                                <span class="text-xs font-bold text-red-400/70">${item.holidayName}</span>
+                                <span class="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Closed</span>
                             </div>
                         `;
                     }
-
                     return `
                         <div class="card-container group">
                             <div class="glass-card rounded-2xl p-6 flex flex-col gap-4 border-l-4 border-blue-500/20">
@@ -481,13 +436,13 @@
                                         <p class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">${item.displayDate}</p>
                                     </div>
                                     <div class="flex flex-1 flex-wrap gap-3">
-                                        <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20 shadow-inner">
-                                            <span class="text-[9px] opacity-50 mr-2 font-black">499:</span> ${item.assignments.slot499}
+                                        <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20">
+                                            <span class="text-[9px] opacity-50 mr-2">499:</span> ${item.assignments.slot499}
                                         </div>
-                                        <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20 shadow-inner">
-                                            <span class="text-[9px] opacity-50 mr-2 font-black">500:</span> ${item.assignments.slot500}
+                                        <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20">
+                                            <span class="text-[9px] opacity-50 mr-2">500:</span> ${item.assignments.slot500}
                                         </div>
-                                        <div class="bg-zinc-800/40 text-zinc-400 px-4 py-2 rounded-xl text-[11px] border border-white/5 font-medium">
+                                        <div class="bg-zinc-800/40 text-zinc-400 px-4 py-2 rounded-xl text-[11px] border border-white/5">
                                             Bk: ${item.assignments.backupP} / ${item.assignments.backupS}
                                         </div>
                                     </div>
@@ -500,15 +455,15 @@
                 excelBody.innerHTML = filteredData.map(item => {
                     if (item.isHoliday) {
                         return `
-                            <tr class="holiday-row">
+                            <tr class="holiday-row opacity-60">
                                 <td class="font-mono text-[11px] tracking-tight">${item.id}</td>
                                 <td class="font-medium">${item.dayName}</td>
-                                <td colspan="4" class="italic opacity-50 text-center tracking-[0.3em] text-[10px] font-black uppercase py-4">Holiday</td>
+                                <td colspan="4" class="text-center text-red-400/60 font-black uppercase tracking-widest py-4 text-[10px]">${item.holidayName}</td>
                             </tr>
                         `;
                     }
                     return `
-                        <tr class="transition-colors hover:bg-white/[0.02]">
+                        <tr>
                             <td class="font-mono text-[11px] text-zinc-500 tracking-tight">${item.id}</td>
                             <td class="text-zinc-400 font-bold text-[11px] uppercase tracking-wider">${item.dayName}</td>
                             <td class="text-blue-400 font-bold uppercase tracking-tight">${item.assignments.slot499}</td>
@@ -522,47 +477,29 @@
         }
 
         function exportToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += "Date,Day,Slot 499,Slot 500,Primary Backup,Secondary Backup\n";
-
+            let csv = "Date,Day,Status,Slot 499,Slot 500,Primary Backup,Secondary Backup\n";
             masterData.forEach(item => {
-                const row = [
-                    item.id,
-                    item.dayName,
-                    item.isHoliday ? "HOLIDAY" : item.assignments.slot499,
-                    item.isHoliday ? "HOLIDAY" : item.assignments.slot500,
-                    item.isHoliday ? "HOLIDAY" : item.assignments.backupP,
-                    item.isHoliday ? "HOLIDAY" : item.assignments.backupS
-                ];
-                csvContent += row.join(",") + "\n";
+                const status = item.isHoliday ? item.holidayName : "Working";
+                csv += `${item.id},${item.dayName},${status},${item.isHoliday ? '' : item.assignments.slot499},${item.isHoliday ? '' : item.assignments.slot500},${item.isHoliday ? '' : item.assignments.backupP},${item.isHoliday ? '' : item.assignments.backupS}\n`;
             });
-
-            const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", `Parking_Allocation_2026_Generated_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
+            link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
+            link.download = "Parking_Allocation_2026.csv";
             link.click();
-            document.body.removeChild(link);
-        }
-
-        function resetFilters() {
-            document.getElementById('searchInput').value = "";
-            setMonth(null, document.querySelector('.month-chip'));
         }
 
         function renderQuickGlance() {
             const container = document.getElementById('quickGlance');
-            const todayKey = "2026-01-05"; 
-            const tomorrowKey = "2026-01-06"; 
+            const today = new Date();
+            const todayKey = [2026, 1, 5].join('-'); // Simulated for current context date
+            const tomorrowKey = [2026, 1, 6].join('-'); // Simulated
 
             const todayData = masterData.find(d => d.id === todayKey);
-            const tomorrowData = masterData.find(d => d.id === tomorrowKey);
+            const tomorrowData = masterData.find(d => d.id === "2026-01-06");
 
             let html = "";
-            if (todayData) { todayData.label = "Current Schedule"; html += createHighlightCardHtml(todayData); }
+            if (todayData) { todayData.label = "Current Assignment"; html += createHighlightCardHtml(todayData); }
             if (tomorrowData) { tomorrowData.label = "Next Assignment"; html += createHighlightCardHtml(tomorrowData); }
-
             container.innerHTML = html;
         }
 
@@ -571,18 +508,11 @@
         renderQuickGlance();
         renderViewData();
 
-        let searchTimeout;
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                renderViewData(e.target.value);
-            }, 150);
-        });
+        document.getElementById('searchInput').addEventListener('input', (e) => renderViewData(e.target.value));
 
         setInterval(() => {
-            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
             const timeEl = document.getElementById('currentTime');
-            if(timeEl) timeEl.innerText = timeStr;
+            if(timeEl) timeEl.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
         }, 1000);
     </script>
 </body>
