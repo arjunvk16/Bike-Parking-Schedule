@@ -109,16 +109,6 @@
             letter-spacing: 0.05em;
         }
 
-        .standby-section {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
-        }
-
-        .card-container:hover .standby-section {
-            max-height: 100px;
-        }
-
         .excel-table {
             border-collapse: separate;
             border-spacing: 0;
@@ -145,9 +135,6 @@
         }
         .excel-table tr:hover td {
             background: rgba(59, 130, 246, 0.05);
-        }
-        .excel-table .holiday-row {
-            background: rgba(239, 68, 68, 0.03);
         }
 
         @media (max-width: 640px) {
@@ -240,7 +227,6 @@
     <script>
         const members = ["Arjun V K", "Eby", "Kunuvava", "Arjun Reeja", "Shehmil", "Chanthuraj", "Sumesh", "Dayanitta", "Akhil"];
         
-        // Accurate Holiday Calendar with Names
         const holidays = {
             "2026-01-26": "Republic Day",
             "2026-04-03": "Good Friday",
@@ -259,6 +245,14 @@
         let activeMonth = null;
         let currentView = 'feed';
 
+        function formatDateKey(date) {
+            return [
+                date.getFullYear(),
+                String(date.getMonth() + 1).padStart(2, '0'),
+                String(date.getDate()).padStart(2, '0')
+            ].join('-');
+        }
+
         function generateFairYearData() {
             const data = [];
             let workingDayCounter = 0;
@@ -267,12 +261,9 @@
                 for (let d = 1; d <= 31; d++) {
                     const date = new Date(2026, m, d);
                     if (date.getMonth() !== m) continue;
-                    
-                    // Skip Weekends
                     if (date.getDay() === 0 || date.getDay() === 6) continue;
 
-                    // Fixed Local Date Key Generation (Avoids timezone shifting bugs)
-                    const dateKey = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+                    const dateKey = formatDateKey(date);
                     const holidayName = holidays[dateKey];
                     const isHoliday = !!holidayName;
                     
@@ -284,26 +275,17 @@
                         fullDateString: date.toDateString(),
                         isHoliday: isHoliday,
                         holidayName: holidayName,
-                        assignments: null,
-                        standby: []
+                        assignments: null
                     };
 
                     if (!isHoliday) {
                         const len = members.length;
-                        const idx1 = workingDayCounter % len;
-                        const idx2 = (workingDayCounter + 1) % len;
-                        const idx3 = (workingDayCounter + 2) % len;
-                        const idx4 = (workingDayCounter + 3) % len;
-
                         entry.assignments = {
-                            slot499: members[idx1],
-                            slot500: members[idx2],
-                            backupP: members[idx3],
-                            backupS: members[idx4]
+                            slot499: members[workingDayCounter % len],
+                            slot500: members[(workingDayCounter + 1) % len],
+                            backupP: members[(workingDayCounter + 2) % len],
+                            backupS: members[(workingDayCounter + 3) % len]
                         };
-
-                        const assignedIds = [idx1, idx2, idx3, idx4];
-                        entry.standby = members.filter((_, i) => !assignedIds.includes(i));
                         workingDayCounter++;
                     }
                     data.push(entry);
@@ -313,6 +295,7 @@
         }
 
         function createHighlightCardHtml(item) {
+            if (!item) return '';
             if (item.isHoliday) {
                 return `
                     <div class="glass-card rounded-3xl p-8 flex flex-col justify-between min-h-[180px] opacity-60">
@@ -345,8 +328,8 @@
                         </div>
                     </div>
                     <div class="text-[10px] text-zinc-500 flex flex-wrap gap-4 justify-between border-t border-white/5 pt-5 relative z-10">
-                        <span>Backup: <strong class="text-zinc-300 ml-1 uppercase">${item.assignments.backupP}</strong></span>
-                        <span>Sec: <strong class="text-zinc-300 ml-1 uppercase">${item.assignments.backupS}</strong></span>
+                        <span>Backup: <strong class="text-zinc-300 ml-1 uppercase font-bold">${item.assignments.backupP}</strong></span>
+                        <span>Sec: <strong class="text-zinc-300 ml-1 uppercase font-bold">${item.assignments.backupS}</strong></span>
                     </div>
                 </div>
             `;
@@ -402,6 +385,7 @@
                 const matchesMonth = !activeMonth || item.month === activeMonth;
                 if (!matchesMonth) return false;
                 if (!query) return true;
+                if (item.id.includes(query)) return true;
                 if (item.holidayName?.toLowerCase().includes(query)) return true;
                 if (item.fullDateString.toLowerCase().includes(query)) return true;
                 return item.assignments?.slot499.toLowerCase().includes(query) ||
@@ -429,22 +413,20 @@
                         `;
                     }
                     return `
-                        <div class="card-container group">
-                            <div class="glass-card rounded-2xl p-6 flex flex-col gap-4 border-l-4 border-blue-500/20">
-                                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-                                    <div class="w-32 shrink-0">
-                                        <p class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">${item.displayDate}</p>
+                        <div class="glass-card rounded-2xl p-6 flex flex-col gap-4 border-l-4 border-blue-500/20">
+                            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                                <div class="w-32 shrink-0">
+                                    <p class="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">${item.displayDate}</p>
+                                </div>
+                                <div class="flex flex-1 flex-wrap gap-3">
+                                    <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20">
+                                        <span class="text-[9px] opacity-50 mr-2 font-black">499:</span> ${item.assignments.slot499}
                                     </div>
-                                    <div class="flex flex-1 flex-wrap gap-3">
-                                        <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20">
-                                            <span class="text-[9px] opacity-50 mr-2">499:</span> ${item.assignments.slot499}
-                                        </div>
-                                        <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20">
-                                            <span class="text-[9px] opacity-50 mr-2">500:</span> ${item.assignments.slot500}
-                                        </div>
-                                        <div class="bg-zinc-800/40 text-zinc-400 px-4 py-2 rounded-xl text-[11px] border border-white/5">
-                                            Bk: ${item.assignments.backupP} / ${item.assignments.backupS}
-                                        </div>
+                                    <div class="slot-pill px-4 py-2 rounded-xl text-xs font-bold border border-blue-500/20">
+                                        <span class="text-[9px] opacity-50 mr-2 font-black">500:</span> ${item.assignments.slot500}
+                                    </div>
+                                    <div class="bg-zinc-800/40 text-zinc-400 px-4 py-2 rounded-xl text-[11px] border border-white/5">
+                                        Bk: ${item.assignments.backupP} / ${item.assignments.backupS}
                                     </div>
                                 </div>
                             </div>
@@ -476,6 +458,53 @@
             }
         }
 
+        function renderQuickGlance() {
+            const container = document.getElementById('quickGlance');
+            
+            // Simulation logic: Use current real date if it's 2026, 
+            // otherwise use a specific anchor date (Jan 7, 2026) for demo purposes.
+            const now = new Date();
+            let anchorDate = now.getFullYear() === 2026 ? now : new Date(2026, 0, 7); 
+            
+            const todayKey = formatDateKey(anchorDate);
+            
+            // Logic to find Next Working Day (Tomorrow or next working day)
+            let tomorrow = new Date(anchorDate);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            let tomorrowKey = formatDateKey(tomorrow);
+
+            // Find Today (if it's a working day or holiday)
+            const todayData = masterData.find(d => d.id === todayKey);
+            
+            // Find the Next available assignment in masterData after today
+            const nextAssignmentIndex = masterData.findIndex(d => d.id === todayKey) + 1;
+            const nextAssignmentData = masterData[nextAssignmentIndex] || null;
+
+            let html = "";
+            
+            // Today Card
+            if (todayData) { 
+                todayData.label = "Current Assignment"; 
+                html += createHighlightCardHtml(todayData); 
+            } else {
+                // If today is a weekend, show a placeholder or the next available
+                html += `
+                    <div class="glass-card rounded-3xl p-8 flex flex-col justify-center min-h-[180px] opacity-40">
+                        <span class="badge-today bg-zinc-800 text-zinc-500 mb-4 self-start">Weekend</span>
+                        <p class="text-zinc-500 text-sm italic">The office is closed for the weekend.</p>
+                    </div>
+                `;
+            }
+
+            // Next Assignment Card
+            if (nextAssignmentData) { 
+                nextAssignmentData.label = "Next Assignment"; 
+                html += createHighlightCardHtml(nextAssignmentData); 
+            }
+
+            container.innerHTML = html;
+        }
+
         function exportToCSV() {
             let csv = "Date,Day,Status,Slot 499,Slot 500,Primary Backup,Secondary Backup\n";
             masterData.forEach(item => {
@@ -488,21 +517,7 @@
             link.click();
         }
 
-        function renderQuickGlance() {
-            const container = document.getElementById('quickGlance');
-            const today = new Date();
-            const todayKey = [2026, 1, 5].join('-'); // Simulated for current context date
-            const tomorrowKey = [2026, 1, 6].join('-'); // Simulated
-
-            const todayData = masterData.find(d => d.id === todayKey);
-            const tomorrowData = masterData.find(d => d.id === "2026-01-06");
-
-            let html = "";
-            if (todayData) { todayData.label = "Current Assignment"; html += createHighlightCardHtml(todayData); }
-            if (tomorrowData) { tomorrowData.label = "Next Assignment"; html += createHighlightCardHtml(tomorrowData); }
-            container.innerHTML = html;
-        }
-
+        // Initialize
         masterData = generateFairYearData();
         renderMonthFilter();
         renderQuickGlance();
@@ -512,7 +527,11 @@
 
         setInterval(() => {
             const timeEl = document.getElementById('currentTime');
-            if(timeEl) timeEl.innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            if(timeEl) {
+                const now = new Date();
+                timeEl.innerText = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' ' + 
+                                  now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+            }
         }, 1000);
     </script>
 </body>
