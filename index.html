@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2026 Parking Allocation</title>
+    <title>2026 Parking Allocation - 7 Member Team</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -45,14 +45,6 @@
             box-shadow: 0 15px 35px -12px rgba(0, 0, 0, 0.5);
         }
 
-        .highlight-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
-            z-index: 1;
-        }
-
         .search-input {
             background: #18181b;
             border: 1px solid #27272a;
@@ -63,13 +55,6 @@
             outline: none;
             border-color: #3b82f6;
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-
-        .month-chip {
-            transition: all 0.2s ease;
-            cursor: pointer;
-            white-space: nowrap;
-            user-select: none;
         }
 
         .month-chip.active {
@@ -83,11 +68,6 @@
             color: #60a5fa;
             border: 1px solid rgba(59, 130, 246, 0.15);
         }
-
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #0a0a0c; }
-        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: #3b82f6; }
 
         .sticky-header {
             position: sticky;
@@ -106,7 +86,6 @@
             font-size: 0.7rem;
             text-transform: uppercase;
             font-weight: 700;
-            letter-spacing: 0.05em;
         }
 
         .excel-table {
@@ -125,22 +104,12 @@
             text-align: left;
             font-size: 0.7rem;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
             color: #71717a;
         }
         .excel-table td {
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.03);
             font-size: 0.85rem;
-        }
-        .excel-table tr:hover td {
-            background: rgba(59, 130, 246, 0.05);
-        }
-
-        @media (max-width: 640px) {
-            .app-container { padding-left: 0.75rem; padding-right: 0.75rem; }
-            .badge-today { font-size: 0.6rem; padding: 2px 8px; }
-            .excel-table td { font-size: 0.75rem; padding: 10px 8px; }
         }
     </style>
 </head>
@@ -153,7 +122,7 @@
                     <h1 class="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
                         <span class="text-blue-500">🚲</span> 2026 Parking
                     </h1>
-                    <p class="text-zinc-500 text-sm mt-1">Staggered Sequential Allocation</p>
+                    <p class="text-zinc-500 text-sm mt-1">7 Member Balanced Rotation</p>
                 </div>
                 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
@@ -174,7 +143,6 @@
             <div id="monthFilter" class="flex gap-2 overflow-x-auto py-5 no-scrollbar"></div>
         </header>
 
-        <!-- Quick Glance -->
         <section id="quickGlanceSection" class="mb-12">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-3">
                 <h2 class="text-xs font-black text-zinc-500 uppercase tracking-[0.25em] flex items-center gap-2">
@@ -187,7 +155,6 @@
             <div id="quickGlance" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
         </section>
 
-        <!-- Main View -->
         <section>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                 <h2 class="text-xs font-black text-zinc-500 uppercase tracking-[0.25em] flex items-center gap-2">
@@ -201,7 +168,7 @@
             
             <div id="allocationFeed" class="space-y-4"></div>
             <div id="allocationExcel" class="hidden glass-card rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                <div class="overflow-x-auto custom-scrollbar">
+                <div class="overflow-x-auto">
                     <table class="excel-table">
                         <thead>
                             <tr>
@@ -225,7 +192,8 @@
     </div>
 
     <script>
-        const members = ["Arjun V K", "Eby", "Kunuvava", "Arjun Reeja", "Shehmil", "Chanthuraj", "Sumesh", "Dayanitta", "Akhil"];
+        // UPDATED: 7 members (Removed Dayanitta and Eby)
+        const members = ["Arjun V K", "Kunuvava", "Arjun Reeja", "Shehmil", "Chanthuraj", "Sumesh", "Akhil"];
         
         const holidays = {
             "2026-01-26": "Republic Day",
@@ -280,6 +248,7 @@
 
                     if (!isHoliday) {
                         const len = members.length;
+                        // Sequential allocation ensures everyone rotates through slots
                         entry.assignments = {
                             slot499: members[workingDayCounter % len],
                             slot500: members[(workingDayCounter + 1) % len],
@@ -337,9 +306,9 @@
 
         function renderMonthFilter() {
             const container = document.getElementById('monthFilter');
-            container.innerHTML = `<div class="month-chip active border border-white/10 px-6 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest" onclick="setMonth(null, this)">All Year</div>` + 
+            container.innerHTML = `<div class="month-chip active border border-white/10 px-6 py-2 rounded-2xl text-xs font-bold uppercase tracking-widest cursor-pointer" onclick="setMonth(null, this)">All Year</div>` + 
                 months.map(m => `
-                    <div class="month-chip border border-white/10 px-6 py-2 rounded-2xl text-zinc-500 text-xs font-bold uppercase tracking-widest" onclick="setMonth('${m}', this)">${m}</div>
+                    <div class="month-chip border border-white/10 px-6 py-2 rounded-2xl text-zinc-500 text-xs font-bold uppercase tracking-widest cursor-pointer" onclick="setMonth('${m}', this)">${m}</div>
                 `).join('');
         }
 
@@ -387,7 +356,6 @@
                 if (!query) return true;
                 if (item.id.includes(query)) return true;
                 if (item.holidayName?.toLowerCase().includes(query)) return true;
-                if (item.fullDateString.toLowerCase().includes(query)) return true;
                 return item.assignments?.slot499.toLowerCase().includes(query) ||
                        item.assignments?.slot500.toLowerCase().includes(query) ||
                        item.assignments?.backupP.toLowerCase().includes(query) ||
@@ -460,34 +428,19 @@
 
         function renderQuickGlance() {
             const container = document.getElementById('quickGlance');
-            
-            // Simulation logic: Use current real date if it's 2026, 
-            // otherwise use a specific anchor date (Jan 7, 2026) for demo purposes.
             const now = new Date();
             let anchorDate = now.getFullYear() === 2026 ? now : new Date(2026, 0, 7); 
-            
             const todayKey = formatDateKey(anchorDate);
             
-            // Logic to find Next Working Day (Tomorrow or next working day)
-            let tomorrow = new Date(anchorDate);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            let tomorrowKey = formatDateKey(tomorrow);
-
-            // Find Today (if it's a working day or holiday)
             const todayData = masterData.find(d => d.id === todayKey);
-            
-            // Find the Next available assignment in masterData after today
             const nextAssignmentIndex = masterData.findIndex(d => d.id === todayKey) + 1;
             const nextAssignmentData = masterData[nextAssignmentIndex] || null;
 
             let html = "";
-            
-            // Today Card
             if (todayData) { 
-                todayData.label = "Current Assignment"; 
+                todayData.label = "Today's Allocation"; 
                 html += createHighlightCardHtml(todayData); 
             } else {
-                // If today is a weekend, show a placeholder or the next available
                 html += `
                     <div class="glass-card rounded-3xl p-8 flex flex-col justify-center min-h-[180px] opacity-40">
                         <span class="badge-today bg-zinc-800 text-zinc-500 mb-4 self-start">Weekend</span>
@@ -496,12 +449,10 @@
                 `;
             }
 
-            // Next Assignment Card
             if (nextAssignmentData) { 
-                nextAssignmentData.label = "Next Assignment"; 
+                nextAssignmentData.label = "Next Working Day"; 
                 html += createHighlightCardHtml(nextAssignmentData); 
             }
-
             container.innerHTML = html;
         }
 
@@ -513,7 +464,7 @@
             });
             const link = document.createElement("a");
             link.href = encodeURI("data:text/csv;charset=utf-8," + csv);
-            link.download = "Parking_Allocation_2026.csv";
+            link.download = "Parking_Allocation_2026_7Member.csv";
             link.click();
         }
 
